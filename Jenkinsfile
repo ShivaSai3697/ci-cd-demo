@@ -9,7 +9,8 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/SHIVASAI3697/ci-cd-demo.git'
+                    url: 'https://github.com/ShivaSai3697/ci-cd-demo.git',
+                    credentialsId: 'github-creds'
             }
         }
 
