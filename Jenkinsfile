@@ -23,7 +23,10 @@ pipeline {
 
         stage('Run Container') {
             steps {
-                sh 'docker run -d --name democi -p 9090:8080 democi'
+                sh '''
+                      docker rm -f democi || true
+                      docker run -d --name democi -p 9090:9090 democi
+                   '''
             }
         }
     }
