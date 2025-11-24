@@ -1,38 +1,43 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'maven'
-    }
-
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/ShivaSai3697/ci-cd-demo.git',
-                    credentialsId: 'github-creds'
+                    url: 'https://github.com/ShivaSai3697/ci-cd-demo.git'
             }
         }
 
-        stage('Build with Maven') {
+        stage('Set Git Remote (Fix)') {
             steps {
-                sh 'mvn clean package'
+                dir('ci-cd-demo') {        // <-- VERY IMPORTANT!!!
+                    sh 'git config remote.origin.url https://github.com/ShivaSai3697/ci-cd-demo.git'
+                }
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build') {
             steps {
-                sh 'docker build -t ci-cd-demo .'
+                dir('ci-cd-demo') {
+                    sh 'mvn clean package'
+                }
             }
         }
 
-        stage('Deploy Container') {
+        stage('Docker Build') {
             steps {
-                sh '''
-                  docker rm -f ci-cd-demo || true
-                  docker run -d --name ci-cd-demo -p 9090:9090 ci-cd-demo
-                '''
+                dir('ci-cd-demo') {
+                    sh 'docker build -t democi .'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'docker run -d -p 9090:9090 --name democi democi'
             }
         }
     }
 }
+
