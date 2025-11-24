@@ -2,42 +2,23 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
+        stage('Maven Build') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/ShivaSai3697/ci-cd-demo.git'
+                sh "mvn clean package"
             }
         }
 
-        stage('Set Git Remote (Fix)') {
+        stage('Build Docker Image') {
             steps {
-                dir('ci-cd-demo') {        // <-- VERY IMPORTANT!!!
-                    sh 'git config remote.origin.url https://github.com/ShivaSai3697/ci-cd-demo.git'
-                }
+                sh "docker build -t democi ."
             }
         }
 
-        stage('Build') {
+        stage('Run Container') {
             steps {
-                dir('ci-cd-demo') {
-                    sh 'mvn clean package'
-                }
-            }
-        }
-
-        stage('Docker Build') {
-            steps {
-                dir('ci-cd-demo') {
-                    sh 'docker build -t democi .'
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                sh 'docker run -d -p 9090:9090 --name democi democi'
+                sh "docker rm -f democi || true"
+                sh "docker run -d --name democi -p 9090:8080 democi"
             }
         }
     }
 }
-
